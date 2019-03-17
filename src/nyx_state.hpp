@@ -15,6 +15,7 @@ class State {
 
         // Create children in tree, return vector of States
         std::vector<State> getNext();
+        std::vector<State> getNext(int stepSize);
 
         // Operator overloading to compare state scores
         bool operator>(const State &rhs) const;
@@ -25,10 +26,14 @@ class State {
 
         std::string hash() const;
         Pose forwardKinematics() const;
+        bool withinTolerance(const State &rhs, int tolerance) const;
+
+    protected:
+        std::vector<Link> chain;
+
     private:
         State();
 
-        std::vector<Link> chain;
         Pose currentPose;
         Pose destinationPose;
 
@@ -50,13 +55,16 @@ State::State(const State &state) {
 }
 
 std::vector<State> State::getNext() {
+    return getNext(1);
+}
+std::vector<State> State::getNext(int stepSize) {
     // Create all next states that can result from current configuration
     std::vector<State> out = std::vector<State>();
 
     for (int i=0; i<chain.size(); i++) {
         // Get link from chain, and increase and decrease angle by 1 degree
         Link decrement = chain[i];
-        decrement.setCurrentAngle(decrement.getCurrentAngle() - 1);
+        decrement.setCurrentAngle(decrement.getCurrentAngle() - stepSize);
         // Create states that will be put into vector
         State first  = State(*this);
         // Check if valid link
@@ -69,7 +77,7 @@ std::vector<State> State::getNext() {
 
 
         Link increment = chain[i];
-        increment.setCurrentAngle(increment.getCurrentAngle() + 1);
+        increment.setCurrentAngle(increment.getCurrentAngle() + stepSize);
         State second = State(*this);
         if (increment.isValid()) {
             second.chain[i] = increment;
@@ -149,6 +157,16 @@ Pose State::forwardKinematics() const {
     }
 
     return end;
+}
+
+// Check that state is within bounds to given state
+bool State::withinTolerance(const State &rhs, int tolerance) const {
+    for (int i=0; i<chain.size(); i++) {
+        if ( abs(chain[i].getCurrentAngle() - rhs.chain[i].getCurrentAngle()) > tolerance ) {
+            return false;
+        }
+    }
+    return true;
 }
 
 #endif

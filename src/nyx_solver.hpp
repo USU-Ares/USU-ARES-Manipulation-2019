@@ -29,6 +29,9 @@ class Solver {
         // Pose information
         Pose currentPose;
         Pose targetPose;
+
+        // Trim tree function
+        State trim(State initial, int stepSize);
 };
 
 Solver::Solver(std::vector<Link> chain) :
@@ -63,12 +66,10 @@ void Solver::updateTargetPose(Pose newTarget) {
 }
 
 bool Solver::plan() {
+    int stepSize = 5;
+
     // Min heap to keep track of states
     std::priority_queue<State, std::vector<State>, std::greater<State>> stateHeap;
-
-    // Initial state
-    State current = State(chain, currentPose, targetPose);
-    stateHeap.push(current);
 
     // Hash to keep track of what has already been seen
     std::unordered_map<std::string, bool> mapper;
@@ -76,8 +77,19 @@ bool Solver::plan() {
     // Counter for debug
     uint64_t count = 0;
 
+    // Initial state
+    State current = State(chain, currentPose, targetPose);
+
+    // Trim tree
+    State initial = trim(current, stepSize);
+    stateHeap.push( initial );
+
+    // DEBUG
+    State closest = current;
+    double nearestSolution = 1000.0;
+
     // Loop until we run out of things to search, or hit maximum search depth
-    while (!stateHeap.empty() && stateHeap.size() < 100000) {
+    while (!stateHeap.empty() && stateHeap.size() < 500000) {
     //while (!stateHeap.empty()) {
         //std::cout << "Size of heap: " << stateHeap.size() << "\n";
         //std::cout << "Size of heap: " << stateHeap.size() << "\tMap Load: " << mapper.load_factor() << "\n";
@@ -86,12 +98,17 @@ bool Solver::plan() {
         current = stateHeap.top();
         stateHeap.pop();
 
-        // Check if valid state
-        if (current.forwardKinematics() - targetPose < 0.0001) {
+        // Check if solution state
+        double dist = current.forwardKinematics() - targetPose;
+        if (dist < 0.1) {
             std::cout << "Found solution!\n";
             std::cout << "Iterations to find: " << count << "\n";
             current.print();
             return true;
+        }
+        if (dist < nearestSolution) {
+            closest = current;
+            nearestSolution = dist;
         }
 
         //current.print();
@@ -100,17 +117,54 @@ bool Solver::plan() {
         std::vector<State> nextStates = current.getNext();
         for (int i=0; i<nextStates.size(); i++) {
             std::string index = nextStates[i].hash();
-            if (mapper.count(index) == 0) {
+            if (initial.withinTolerance(nextStates[i], stepSize) && mapper.count(index) == 0) {
                 stateHeap.push(nextStates[i]);
                 mapper[index] = true;
             }
         }
     }
+
+#if 0
+    std::cout << "Nearest found\n";
+    current.print();
+    std::cout << "Dist: " << nearestSolution << "\n";
+#endif
     return false;
 }
 
 void Solver::applyMove() {
     currentPose = targetPose;
+}
+
+State Solver::trim(State initial, int stepSize) {
+    // Trim tree to be closer to search destination
+    std::vector<State> nextStates;
+    State best = initial;
+
+    bool loop = true;
+
+    while (loop) {
+        loop = false;
+        nextStates = best.getNext(stepSize);
+
+        // Find the state that is the closest to the target pose
+        double distance = best.forwardKinematics() - targetPose;
+
+        for (int i=0; i<nextStates.size(); i++) {
+            Pose current_end = nextStates[i].forwardKinematics();
+
+            // Check that our current state is closer from target than initial state
+            if ( distance > current_end - targetPose ) {
+                best = nextStates[i];
+                distance = current_end - targetPose;
+                loop = true;
+            }
+        }
+    }
+
+    //std::cout << "Finished trimming\n";
+
+    return best;
 }
 
 #endif
