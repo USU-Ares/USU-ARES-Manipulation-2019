@@ -18,13 +18,20 @@ class Solver {
         // Destructor
         ~Solver();
 
-        void updateTargetPose(Pose newTarget); // Placeholder for testing, replace with joyCallback
+        void addSavedPosition(State position);
+
+        bool goToSavedPosition(int index);
+
+        bool updateTargetPose(Pose newTarget); // Placeholder for testing, replace with joyCallback
 
         bool plan(); // Solve IK from current pose to target
 
         void applyMove(); // Use previous plan and update poses
     private:
         std::vector<Link> chain;
+
+        // Saved positions
+        std::vector<State> savedPositions;
 
         // Pose information
         Pose currentPose;
@@ -55,13 +62,25 @@ Solver::~Solver() {
     p_targetPose  = nullptr;
     */
 }
+void Solver::addSavedPosition(State position) {
+    savedPositions.push_back(position);
+}
+bool Solver::goToSavedPosition(int index) {
+    // Check a valid entry
+    if (index < 0 || index >= savedPositions.size()) {
+        return false;
+    }
+    return updateTargetPost( forwardKinematics(savedPositions[position]) );
+}
 
-void Solver::updateTargetPose(Pose newTarget) {
+bool Solver::updateTargetPose(Pose newTarget) {
     targetPose = newTarget;
     if (plan()) {
         std::cout << "Fould solution\n";
+        return true;
     } else {
         std::cout << "No solution found\n";
+        return false;
     }
 }
 
