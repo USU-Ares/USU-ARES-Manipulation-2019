@@ -1,4 +1,4 @@
-# Manipulation-2019
+# USU-ARES-Manipulation-2019
 
 Homebrew inverse kinematics control for USU ARES 2019 rover for URC.
 

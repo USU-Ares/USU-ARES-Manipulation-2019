@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>nyx_inverse_kinematics</name>
+  <name>usu-ares-manipulation-2019</name>
   <version>0.0.1</version>
-  <description>The nyx_inverse_kinematics package</description>
+  <description>The inverse kinematics package for the USU ARES team</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
