@@ -27,6 +27,9 @@ class Solver {
         bool plan(); // Solve IK from current pose to target
 
         void applyMove(); // Use previous plan and update poses
+
+        Pose getTarget();
+        std::vector<Link> getChain();
     private:
         std::vector<Link> chain;
 
@@ -184,6 +187,13 @@ State Solver::trim(State initial, int stepSize) {
     //std::cout << "Finished trimming\n";
 
     return best;
+}
+
+Pose Solver::getTarget() {
+    return targetPose;
+}
+std::vector<Link> Solver::getChain() {
+    return chain;
 }
 
 #endif

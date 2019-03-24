@@ -21,6 +21,11 @@ class Pose {
         void setY(double newY) { y = newY; }
         void setZ(double newZ) { z = newZ; }
 
+        // Deltas
+        void deltaX(double d_x) { x += d_x; }
+        void deltaY(double d_y) { y += d_y; }
+        void deltaZ(double d_z) { z += d_z; }
+
         // Distance between two poses
         double operator-(const Pose &rhs) const;
 
