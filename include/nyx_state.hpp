@@ -10,6 +10,7 @@
 class State {
     public:
         // Constructor
+        State(std::vector<Link> chain);
         State(std::vector<Link> chain, Pose currentPose, Pose destinationPose);
         State(const State &state);
 
@@ -29,7 +30,6 @@ class State {
         bool withinTolerance(const State &rhs, int tolerance) const;
 
         void setChain(std::vector<Link> chain);
-        void toMiddle();
 
     protected:
         std::vector<Link> chain;
@@ -42,6 +42,11 @@ class State {
 
         int stepCount;
 };
+
+State::State(std::vector<Link> chain) :
+    State(chain, Pose(), Pose())
+{
+}
 
 State::State(std::vector<Link> chain, Pose currentPose, Pose destinationPose) :
     chain (chain),

@@ -62,13 +62,15 @@ ArmController::ArmController():
     // DOF 3
     chain.push_back(Link(8.9, 2, -45,47, 95,134));
 
-    //Pose startPose(15, 15, 15);
-    //solver = Solver(chain, startPose);
+    // Set all angles to be in the middle (DEBUG)
+    for (int i=0; i<chain.size(); i++) {
+        chain[i].toMiddle();
+    }
+
+    solver = Solver(chain);
 
     // Set current and destination angles
     for (int i=0; i<chain.size(); i++) {
-        // Set all angles to be in the middle (DEBUG)
-        chain[i].toMiddle();
 
         int duty = chain[i].getDuty(chain[i].getCurrentAngle());
         currentAngle.push_back( duty );

@@ -14,7 +14,6 @@ class Solver {
         // Constructors
         Solver();
         Solver(std::vector<Link> chain);
-        Solver(std::vector<Link> chain, Pose start);
 
         // Destructor
         ~Solver();
@@ -47,18 +46,16 @@ class Solver {
 };
 
 Solver::Solver() :
-    Solver(std::vector<Link>(), Pose())
+    Solver(std::vector<Link>())
 {
 }
-Solver::Solver(std::vector<Link> chain) :
-    Solver(chain, Pose())
+Solver::Solver(std::vector<Link> chain)
 {
-}
-Solver::Solver(std::vector<Link> chain, Pose start) :
-    chain (chain),
-    currentPose (start),
-    targetPose (Pose())
-{
+    this->chain = chain;
+    // Create current Pose information
+    State temp (chain);
+    this->currentPose = temp.forwardKinematics();
+    this->targetPose = temp.forwardKinematics();
 }
 Solver::~Solver() {
     /*if (p_currentPose != nullptr) {
