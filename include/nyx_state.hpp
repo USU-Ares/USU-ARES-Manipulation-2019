@@ -28,6 +28,9 @@ class State {
         Pose forwardKinematics() const;
         bool withinTolerance(const State &rhs, int tolerance) const;
 
+        void setChain(std::vector<Link> chain);
+        void toMiddle();
+
     protected:
         std::vector<Link> chain;
 
@@ -167,6 +170,11 @@ bool State::withinTolerance(const State &rhs, int tolerance) const {
         }
     }
     return true;
+}
+
+// Set the chain, this may need to be removed after testing
+void State::setChain(std::vector<Link> chain) {
+    this->chain = chain;
 }
 
 #endif

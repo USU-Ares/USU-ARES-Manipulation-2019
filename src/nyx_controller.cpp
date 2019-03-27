@@ -56,17 +56,20 @@ ArmController::ArmController():
     // Vertical offset
     chain.push_back(Link(6.38, 2, 90,90, 0,0));
     // DOF 1
-    chain.push_back(Link(17.63, 2, 0,103, 57,140));
+    chain.push_back(Link(17.63, 2, -94,9, 57,140));
     // DOF 2
-    chain.push_back(Link(16.12, 2, 0,122, 52,115));
+    chain.push_back(Link(16.12, 2, -36,-158, 52,115));
     // DOF 3
-    chain.push_back(Link(8.9, 2, 92,0, 95,134));
+    chain.push_back(Link(8.9, 2, -45,47, 95,134));
 
-    Pose startPose(15, 15, 15);
-    solver = Solver(chain, startPose);
+    //Pose startPose(15, 15, 15);
+    //solver = Solver(chain, startPose);
 
     // Set current and destination angles
     for (int i=0; i<chain.size(); i++) {
+        // Set all angles to be in the middle (DEBUG)
+        chain[i].toMiddle();
+
         int duty = chain[i].getDuty(chain[i].getCurrentAngle());
         currentAngle.push_back( duty );
         destinationAngle.push_back( duty );

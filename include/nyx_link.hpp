@@ -35,6 +35,7 @@ class Link {
 
         // Set current angle for planning help
         void setCurrentAngle(int theta);
+        void toMiddle();
 
         void print() const;
     private:
@@ -108,6 +109,10 @@ int Link::getAngle(int duty) {
 // Set current angle of link
 void Link::setCurrentAngle(int theta) {
     current_theta = theta;
+}
+// Set angle to be in the middle of range
+void Link::toMiddle() {
+    setCurrentAngle( (max_theta + min_theta) / 2);
 }
 
 // Return percentage of angle within range
