@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "nyx_solver.hpp"
+#include "../include/nyx_solver.hpp"
 
 class ArmController {
     public:
@@ -31,9 +31,7 @@ class ArmController {
         std::vector<int> currentAngle;
         std::vector<int> destinationAngle;
 
-        sensor_msgs::Joy::ConstPtr& old_commands;
-
-        std::vector<sensor_msgs::Joy::ConstPtr&> joyMessages;
+        //std::vector<sensor_msgs::Joy::ConstPtr&> joyMessages;
 };
 
 ArmController::ArmController():
@@ -49,15 +47,22 @@ ArmController::ArmController():
 
 
     // Publishers to the Arduino
-    dof_pub_ = nh_.advertise<std_msgs::UInt16MultiArray>("dof", 1);
+    dof_pub_ = nh_.advertise<std_msgs::UInt8MultiArray>("dof", 1);
 
     // Initialize solver
     std::vector<Link> chain;
-    chain.push_back(Link(10, 1, -90,90, 0,180));
-    chain.push_back(Link(10, 2, -90,90, 0,180));
-    chain.push_back(Link(10, 2, -90,90, 0,180));
-    chain.push_back(Link(10, 2, -90,90, 0,180));
-    Pose startPose(20, 20, 20);
+    // DOF 0
+    chain.push_back(Link(6.16, 1, 0,170, 50,120));
+    // Vertical offset
+    chain.push_back(Link(6.38, 2, 90,90, 0,0));
+    // DOF 1
+    chain.push_back(Link(17.63, 2, 0,103, 57,140));
+    // DOF 2
+    chain.push_back(Link(16.12, 2, 0,122, 52,115));
+    // DOF 3
+    chain.push_back(Link(8.9, 2, 92,0, 95,134));
+
+    Pose startPose(15, 15, 15);
     solver = Solver(chain, startPose);
 
     // Set current and destination angles
@@ -66,8 +71,6 @@ ArmController::ArmController():
         currentAngle.push_back( duty );
         destinationAngle.push_back( duty );
     }
-
-    message_count = 0;
 
     joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("joy", 10, &ArmController::joyCallback, this);
 }
@@ -112,7 +115,8 @@ void ArmController::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
     moveArm();
 }
 
-void moveArm() {
+void ArmController::moveArm() {
+    /*
     bool needToUpdate = false;
     for (int i=0; i<currentAngle.size(); i++) {
         if (currentAngle[i] != destinationAngle[i])
@@ -127,18 +131,27 @@ void moveArm() {
         //currentAngle[i] = delta/speedMult;
         currentAngle[i] = destinationAngle[i];
     }
+    */
+    
+    // TODO temporary holding for actual duty cycles
+    std::vector<int> duty_cycles;
+    std::vector<Link> chain = solver.getChain();
+    for (int i=0; i<chain.size(); i++) {
+        if (i != 1)
+            duty_cycles.push_back( chain[i].getDuty(chain[i].getCurrentAngle()) );
+    }
 
     // If any angles are different, construct message and send it
     std_msgs::UInt8MultiArray msg;
     // Set up dimensions
     msg.layout.dim.push_back(std_msgs::MultiArrayDimension());
-    msg.layout.dim[0].size = currentAngle.size();
+    msg.layout.dim[0].size = duty_cycles.size();
     msg.layout.dim[0].stride = 1;
     msg.layout.dim[0].label = "i";
 
     // Copy data into message
     msg.data.clear();
-    msg.data.insert(msg.data.end(), currentAngle.begin(), currentAngle.end());
+    msg.data.insert(msg.data.end(), duty_cycles.begin(), duty_cycles.end());
 
     // Publish message
     dof_pub_.publish(msg);

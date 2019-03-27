@@ -12,6 +12,7 @@
 class Solver {
     public:
         // Constructors
+        Solver();
         Solver(std::vector<Link> chain);
         Solver(std::vector<Link> chain, Pose start);
 
@@ -30,6 +31,7 @@ class Solver {
 
         Pose getTarget();
         std::vector<Link> getChain();
+        void setChain(std::vector<Link> n_chain);
     private:
         std::vector<Link> chain;
 
@@ -44,6 +46,10 @@ class Solver {
         State trim(State initial, int stepSize);
 };
 
+Solver::Solver() :
+    Solver(std::vector<Link>(), Pose())
+{
+}
 Solver::Solver(std::vector<Link> chain) :
     Solver(chain, Pose())
 {
@@ -73,7 +79,7 @@ bool Solver::goToSavedPosition(int index) {
     if (index < 0 || index >= savedPositions.size()) {
         return false;
     }
-    return updateTargetPost( forwardKinematics(savedPositions[position]) );
+    return updateTargetPose( savedPositions[index].forwardKinematics() );
 }
 
 bool Solver::updateTargetPose(Pose newTarget) {
@@ -83,6 +89,7 @@ bool Solver::updateTargetPose(Pose newTarget) {
         return true;
     } else {
         std::cout << "No solution found\n";
+        std::cout << "End: " << targetPose.getX() << "\t" << targetPose.getY() << "\t" << targetPose.getZ() << "\n";
         return false;
     }
 }
@@ -194,6 +201,9 @@ Pose Solver::getTarget() {
 }
 std::vector<Link> Solver::getChain() {
     return chain;
+}
+void Solver::setChain(std::vector<Link> n_chain) {
+    chain = n_chain;
 }
 
 #endif
