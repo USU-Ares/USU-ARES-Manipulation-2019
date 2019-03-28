@@ -31,6 +31,7 @@ class State {
 
         void setChain(std::vector<Link> chain);
 
+        std::vector<Link> getChain();
     protected:
         std::vector<Link> chain;
 
@@ -180,6 +181,11 @@ bool State::withinTolerance(const State &rhs, int tolerance) const {
 // Set the chain, this may need to be removed after testing
 void State::setChain(std::vector<Link> chain) {
     this->chain = chain;
+}
+
+// Get chain
+std::vector<Link> State::getChain() {
+    return chain;
 }
 
 #endif

@@ -130,6 +130,10 @@ bool Solver::plan() {
             std::cout << "Found solution!\n";
             std::cout << "Iterations to find: " << count << "\n";
             current.print();
+            // Set state
+            chain = current.getChain();
+            applyMove();
+
             return true;
         }
         if (dist < nearestSolution) {

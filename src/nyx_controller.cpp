@@ -1,6 +1,9 @@
 #include <ros/ros.h>
 #include <sensor_msgs/Joy.h>
 #include <std_msgs/UInt8MultiArray.h>
+#include <std_msgs/UInt8.h>
+
+#include <iostream>
 
 #include <vector>
 
@@ -25,8 +28,12 @@ class ArmController {
 
         int linear_, angular_;
         double l_scale_, a_scale_;
-        ros::Publisher dof_pub_;
         ros::Subscriber joy_sub_;
+        //ros::Publisher dof_pub_;
+        ros::Publisher dof0_pub_;
+        ros::Publisher dof1_pub_;
+        ros::Publisher dof2_pub_;
+        ros::Publisher dof3_pub_;
 
         std::vector<int> currentAngle;
         std::vector<int> destinationAngle;
@@ -47,7 +54,11 @@ ArmController::ArmController():
 
 
     // Publishers to the Arduino
-    dof_pub_ = nh_.advertise<std_msgs::UInt8MultiArray>("dof", 1);
+    //dof_pub_ = nh_.advertise<std_msgs::UInt8MultiArray>("dof", 1);
+    dof0_pub_ = nh_.advertise<std_msgs::UInt8>("dof0", 1);
+    dof1_pub_ = nh_.advertise<std_msgs::UInt8>("dof1", 1);
+    dof2_pub_ = nh_.advertise<std_msgs::UInt8>("dof2", 1);
+    dof3_pub_ = nh_.advertise<std_msgs::UInt8>("dof3", 1);
 
     // Initialize solver
     std::vector<Link> chain;
@@ -95,7 +106,7 @@ void ArmController::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
     Pose dest = solver.getTarget();
     
     // Delta multiplier
-    double mult = 0.1;
+    double mult = 0.01;
 
     // Adjust Z destination by left joystick
     dest.deltaZ( (l_scale_*joy->axes[1]) * mult );
@@ -146,6 +157,7 @@ void ArmController::moveArm() {
             duty_cycles.push_back( chain[i].getDuty(chain[i].getCurrentAngle()) );
     }
 
+    /*
     // If any angles are different, construct message and send it
     std_msgs::UInt8MultiArray msg;
     // Set up dimensions
@@ -160,6 +172,22 @@ void ArmController::moveArm() {
 
     // Publish message
     dof_pub_.publish(msg);
+    */
+
+    // Writing to 4 topics
+    std_msgs::UInt8 command_0;
+    std_msgs::UInt8 command_1;
+    std_msgs::UInt8 command_2;
+    std_msgs::UInt8 command_3;
+    command_0.data = duty_cycles[0];
+    command_1.data = duty_cycles[1];
+    command_2.data = duty_cycles[2];
+    command_3.data = duty_cycles[3];
+    std::cout << "Command 2: " << duty_cycles[3] << "\n";
+    dof0_pub_.publish(command_0);
+    dof1_pub_.publish(command_1);
+    dof2_pub_.publish(command_2);
+    dof3_pub_.publish(command_3);
 }
 
 int main(int argc, char** argv) {
