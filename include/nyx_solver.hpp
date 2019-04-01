@@ -20,17 +20,18 @@ class Solver {
 
         void addSavedPosition(State position);
 
-        bool goToSavedPosition(int index);
+        State goToSavedPosition(int index);
 
-        bool updateTargetPose(Pose newTarget); // Placeholder for testing, replace with joyCallback
+        State updateTargetPose(Pose newTarget); // Placeholder for testing, replace with joyCallback
 
-        bool plan(); // Solve IK from current pose to target
+        State plan(); // Solve IK from current pose to target
 
         void applyMove(); // Use previous plan and update poses
 
         Pose getTarget();
         std::vector<Link> getChain();
         void setChain(std::vector<Link> n_chain);
+        State getState();
     private:
         std::vector<Link> chain;
 
@@ -41,6 +42,8 @@ class Solver {
         Pose currentPose;
         Pose targetPose;
 
+        State currentState;
+
         // Trim tree function
         State trim(State initial, int stepSize);
 };
@@ -49,13 +52,13 @@ Solver::Solver() :
     Solver(std::vector<Link>())
 {
 }
-Solver::Solver(std::vector<Link> chain)
+Solver::Solver(std::vector<Link> chain) :
+    currentState (State(chain))
 {
     this->chain = chain;
     // Create current Pose information
-    State temp (chain);
-    this->currentPose = temp.forwardKinematics();
-    this->targetPose = temp.forwardKinematics();
+    this->currentPose = currentState.forwardKinematics();
+    this->targetPose = currentState.forwardKinematics();
 }
 Solver::~Solver() {
     /*if (p_currentPose != nullptr) {
@@ -71,27 +74,28 @@ Solver::~Solver() {
 void Solver::addSavedPosition(State position) {
     savedPositions.push_back(position);
 }
-bool Solver::goToSavedPosition(int index) {
+State Solver::goToSavedPosition(int index) {
     // Check a valid entry
-    if (index < 0 || index >= savedPositions.size()) {
+    /*if (index < 0 || index >= savedPositions.size()) {
         return false;
-    }
+    }*/
     return updateTargetPose( savedPositions[index].forwardKinematics() );
 }
 
-bool Solver::updateTargetPose(Pose newTarget) {
+State Solver::updateTargetPose(Pose newTarget) {
     targetPose = newTarget;
-    if (plan()) {
+    return plan();
+    /*(if (plan()) {
         std::cout << "Fould solution\n";
-        return true;
+        //return true;
     } else {
         std::cout << "No solution found\n";
         std::cout << "End: " << targetPose.getX() << "\t" << targetPose.getY() << "\t" << targetPose.getZ() << "\n";
-        return false;
-    }
+        //return false;
+    }*/
 }
 
-bool Solver::plan() {
+State Solver::plan() {
     int stepSize = 5;
 
     // Min heap to keep track of states
@@ -126,15 +130,19 @@ bool Solver::plan() {
 
         // Check if solution state
         double dist = current.forwardKinematics() - targetPose;
-        if (dist < 0.1) {
+        //if (dist < 0.1) {
+        if (dist < 1) {
             std::cout << "Found solution!\n";
             std::cout << "Iterations to find: " << count << "\n";
             current.print();
             // Set state
             chain = current.getChain();
+            currentState = current;
+            std::cout << "\t\t\t" << chain[0].getDuty(chain[0].getCurrentAngle()) << "\n";
             applyMove();
 
-            return true;
+            //return true;
+            return current;
         }
         if (dist < nearestSolution) {
             closest = current;
@@ -154,12 +162,12 @@ bool Solver::plan() {
         }
     }
 
-#if 0
+#if 1
     std::cout << "Nearest found\n";
     current.print();
     std::cout << "Dist: " << nearestSolution << "\n";
 #endif
-    return false;
+    return current;
 }
 
 void Solver::applyMove() {
@@ -205,6 +213,9 @@ std::vector<Link> Solver::getChain() {
 }
 void Solver::setChain(std::vector<Link> n_chain) {
     chain = n_chain;
+}
+State Solver::getState() {
+    return currentState;
 }
 
 #endif

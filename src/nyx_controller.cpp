@@ -106,7 +106,7 @@ void ArmController::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
     Pose dest = solver.getTarget();
     
     // Delta multiplier
-    double mult = 0.01;
+    double mult = 0.05;
 
     // Adjust Z destination by left joystick
     dest.deltaZ( (l_scale_*joy->axes[1]) * mult );
@@ -118,13 +118,12 @@ void ArmController::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
     dest.deltaX( (l_scale_*joy->axes[3]) * mult );
 
     // Solve for angles
-    bool found = solver.updateTargetPose(dest);
+    //bool found = solver.updateTargetPose(dest);
+    State found = solver.updateTargetPose(dest);
 
-    if (found) {
-        std::vector<Link> chain = solver.getChain();
-        for (int i=0; i<chain.size(); i++) {
-            destinationAngle[i] = chain[i].getCurrentAngle();
-        }
+    std::vector<Link> chain = solver.getChain();
+    for (int i=0; i<chain.size(); i++) {
+        destinationAngle[i] = chain[i].getCurrentAngle();
     }
 
     // TODO change to be multithreaded?

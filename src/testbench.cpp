@@ -1,8 +1,9 @@
 #include <iostream>
 
-#include "nyx_solver.hpp"
+#include "../include/nyx_solver.hpp"
 
 int main() {
+#if 0
 #if 0
     Pose firstPose(2,0,0);
     Pose secondPose(1,1,0);
@@ -64,4 +65,34 @@ int main() {
         }
     }
     */
+#endif
+    // Initialize solver
+    std::vector<Link> chain;
+    // DOF 0
+    chain.push_back(Link(6.16, 1, 0,170, 50,120));
+    // Vertical offset
+    chain.push_back(Link(6.38, 2, 90,90, 0,0));
+    // DOF 1
+    chain.push_back(Link(17.63, 2, -94,9, 57,140));
+    // DOF 2
+    chain.push_back(Link(16.12, 2, -36,-158, 52,115));
+    // DOF 3
+    chain.push_back(Link(8.9, 2, -45,47, 95,134));
+
+    /*chain[0].setCurrentAngle(85);
+    chain[2].setCurrentAngle(-50);
+    chain[3].setCurrentAngle(-90);
+    chain[4].setCurrentAngle(0);
+    */
+    
+    Pose dest (35.611878, 3.115636, -1.454086);
+
+    Solver solver (chain);
+
+    std::cout << "Angles: " << std::endl;
+    solver.getState().print();
+
+    std::cout << "Solved state:" << std::endl;
+    solver.updateTargetPose(dest).print();
+
 }
