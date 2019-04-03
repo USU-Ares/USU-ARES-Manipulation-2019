@@ -83,8 +83,21 @@ State Solver::goToSavedPosition(int index) {
 }
 
 State Solver::updateTargetPose(Pose newTarget) {
+    // Store old target in case the new one is unreachable
+    Pose oldTarget = targetPose;
+    
+    // Get solution to target
     targetPose = newTarget;
-    return plan();
+    State solution = plan();
+
+    // Check if distance is too far
+    if (solution.forwardKinematics() - targetPose > 1) {
+        targetPose = oldTarget;
+        return plan();
+    }
+    // Otherwise, return solved solution
+    return solution;
+
     /*(if (plan()) {
         std::cout << "Fould solution\n";
         //return true;

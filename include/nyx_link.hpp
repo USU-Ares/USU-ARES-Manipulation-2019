@@ -118,14 +118,14 @@ void Link::toMiddle() {
 // Return percentage of angle within range
 double Link::anglePercentage(int theta) {
     if (!isValidAngle(theta)) {
-        return -1;
+        return 0;
     }
     return (double)(theta-min_theta) / (max_theta-min_theta);
 }
 // Return percentage of duty cycle within range
 double Link::dutyPercentage(int duty) {
     if (!isValidDuty(duty)) {
-        return -1;
+        return 0;
     }
     return (double)(duty-min_duty) / (max_duty-min_duty);
 }

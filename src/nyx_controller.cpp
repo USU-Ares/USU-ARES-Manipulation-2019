@@ -63,7 +63,7 @@ ArmController::ArmController():
     // Initialize solver
     std::vector<Link> chain;
     // DOF 0
-    chain.push_back(Link(6.16, 1, 0,170, 50,120));
+    chain.push_back(Link(6.16, 1, 0,270, 50,120));
     // Vertical offset
     chain.push_back(Link(6.38, 2, 90,90, 0,0));
     // DOF 1
@@ -74,9 +74,14 @@ ArmController::ArmController():
     chain.push_back(Link(8.9, 2, -45,47, 95,134));
 
     // Set all angles to be in the middle (DEBUG)
-    for (int i=0; i<chain.size(); i++) {
+    // Not doing at the moment because it will run into the table if everything is middled
+    /*for (int i=0; i<chain.size(); i++) {
         chain[i].toMiddle();
-    }
+    }*/
+    chain[0].setCurrentAngle(200);
+    chain[2].setCurrentAngle(-20);
+    chain[3].setCurrentAngle(-90);
+    chain[4].setCurrentAngle(0);
 
     solver = Solver(chain);
 
@@ -106,19 +111,20 @@ void ArmController::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
     Pose dest = solver.getTarget();
     
     // Delta multiplier
-    double mult = 0.05;
+    double cartesianMult = 0.01;
+    double sphericalMult = 0.001;
 
     // Get axis deltas
-    double d_x = l_scale_*joy->axes[0] * mult;
-    double d_y = 0;
-    double d_z = l_scale_*joy->axes[1] * mult;
+    double d_x = l_scale_*joy->axes[0] * cartesianMult;
+    double d_y = l_scale_*joy->axes[1] * cartesianMult;
+    double d_z = 0;
     double d_row   = 0;
-    double d_theta = l_scale_*joy->axes[4] * mult;
-    double d_phi   = l_scale_*joy->axes[3] * mult;
+    double d_theta = l_scale_*joy->axes[3] * sphericalMult;
+    double d_phi   = l_scale_*joy->axes[4] * sphericalMult;
 
     // Aply deltas to destination
     dest.deltaCartesian(d_x, d_y, d_z);
-    dest.deltaShperical(d_phi, d_theta, d_row);
+    dest.deltaSpherical(d_phi, d_theta, d_row);
 
     /*
     // Adjust Z destination by left joystick
@@ -165,10 +171,12 @@ void ArmController::moveArm() {
     // TODO temporary holding for actual duty cycles
     std::vector<int> duty_cycles;
     std::vector<Link> chain = solver.getChain();
+    std::cout << "Angles: ";
     for (int i=0; i<chain.size(); i++) {
-        if (i != 1)
-            duty_cycles.push_back( chain[i].getDuty(chain[i].getCurrentAngle()) );
+        std::cout << chain[i].getCurrentAngle() << "\t";
+        duty_cycles.push_back( chain[i].getDuty(chain[i].getCurrentAngle()) );
     }
+    std::cout << "\n";
 
     /*
     // If any angles are different, construct message and send it
@@ -193,10 +201,15 @@ void ArmController::moveArm() {
     std_msgs::UInt8 command_2;
     std_msgs::UInt8 command_3;
     command_0.data = duty_cycles[0];
-    command_1.data = duty_cycles[1];
-    command_2.data = duty_cycles[2];
-    command_3.data = duty_cycles[3];
-    std::cout << "Command 2: " << duty_cycles[3] << "\n";
+    command_1.data = duty_cycles[2];
+    command_2.data = duty_cycles[3];
+    command_3.data = duty_cycles[4];
+    std::cout << "Duties: ";
+    for (int i=0; i<duty_cycles.size(); i++) {
+        std::cout << duty_cycles[i] << "\t";
+    }
+    std::cout << "\n";
+    //std::cout << "Command 2: " << duty_cycles[3] << "\n";
     dof0_pub_.publish(command_0);
     dof1_pub_.publish(command_1);
     dof2_pub_.publish(command_2);

@@ -160,8 +160,8 @@ Pose State::forwardKinematics() const {
 
         // Adjust pose appropriately
 
-        end.setX( end.getX() + temp.getLength()*cos(radians(pitch))*sin(radians(yaw)) );
-        end.setY( end.getY() + temp.getLength()*cos(radians(pitch))*cos(radians(yaw)) );
+        end.setX( end.getX() + temp.getLength()*cos(radians(pitch))*cos(radians(yaw)) );
+        end.setY( end.getY() + temp.getLength()*cos(radians(pitch))*sin(radians(yaw)) );
         end.setZ( end.getZ() + temp.getLength()*sin(radians(pitch)) );
     }
 

@@ -27,7 +27,7 @@ class Pose {
         void deltaZ(double d_z) { z += d_z; }
 
         void deltaCartesian(double d_x, double d_y, double d_z);
-        void deltaShperical(double d_phi, double d_theta, double d_row);
+        void deltaSpherical(double d_phi, double d_theta, double d_row);
 
         // Distance between two poses
         double operator-(const Pose &rhs) const;
@@ -69,24 +69,24 @@ void Pose::deltaCartesian(double d_x, double d_y, double d_z) {
     deltaY(d_y);
     deltaZ(d_z);
 }
-void Pose::deltaShperical(double d_phi, double d_theta, double d_row) {
+void Pose::deltaSpherical(double d_phi, double d_theta, double d_rho) {
     double distance = pow( x, 2) + pow( y, 2) + pow( z, 2);
     distance = sqrt(distance);
 
     // Get spherical coordinates from cartesian points
-    double phi = atan( y / x );
-    double theta = acos( z / distance );
-    double row = distance;
+    double phi = atan( z / sqrt( x*x + y*y) );
+    double theta = atan( y / x );
+    double rho = distance;
 
     // Adjust values by deltas
     phi += d_phi;
     theta += d_theta;
-    row += d_row;
+    rho += d_rho;
 
     // Convert back to cartesian
-    x = row * cos(phi) * sin(theta);
-    y = row * sin(phi) * sin(theta);
-    z = row * cos(phi);
+    x = rho * cos(phi) * cos(theta);
+    y = rho * cos(phi) * sin(theta);
+    z = rho * sin(phi);
 }
 
 #endif
