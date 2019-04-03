@@ -26,6 +26,9 @@ class Pose {
         void deltaY(double d_y) { y += d_y; }
         void deltaZ(double d_z) { z += d_z; }
 
+        void deltaCartesian(double d_x, double d_y, double d_z);
+        void deltaShperical(double d_phi, double d_theta, double d_row);
+
         // Distance between two poses
         double operator-(const Pose &rhs) const;
 
@@ -59,6 +62,31 @@ double Pose::operator-(const Pose &rhs) const {
 
 void Pose::print() const {
     printf("X: %f  Y: %f  Z: %f\n",x,y,z);
+}
+
+void Pose::deltaCartesian(double d_x, double d_y, double d_z) {
+    deltaX(d_x);
+    deltaY(d_y);
+    deltaZ(d_z);
+}
+void Pose::deltaShperical(double d_phi, double d_theta, double d_row) {
+    double distance = pow( x, 2) + pow( y, 2) + pow( z, 2);
+    distance = sqrt(distance);
+
+    // Get spherical coordinates from cartesian points
+    double phi = atan( y / x );
+    double theta = acos( z / distance );
+    double row = distance;
+
+    // Adjust values by deltas
+    phi += d_phi;
+    theta += d_theta;
+    row += d_row;
+
+    // Convert back to cartesian
+    x = row * cos(phi) * sin(theta);
+    y = row * sin(phi) * sin(theta);
+    z = row * cos(phi);
 }
 
 #endif

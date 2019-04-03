@@ -108,6 +108,19 @@ void ArmController::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
     // Delta multiplier
     double mult = 0.05;
 
+    // Get axis deltas
+    double d_x = l_scale_*joy->axes[0] * mult;
+    double d_y = 0;
+    double d_z = l_scale_*joy->axes[1] * mult;
+    double d_row   = 0;
+    double d_theta = l_scale_*joy->axes[4] * mult;
+    double d_phi   = l_scale_*joy->axes[3] * mult;
+
+    // Aply deltas to destination
+    dest.deltaCartesian(d_x, d_y, d_z);
+    dest.deltaShperical(d_phi, d_theta, d_row);
+
+    /*
     // Adjust Z destination by left joystick
     dest.deltaZ( (l_scale_*joy->axes[1]) * mult );
     // Adjust X destination by left joystick
@@ -116,6 +129,7 @@ void ArmController::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
     dest.deltaY( (l_scale_*joy->axes[4]) * mult );
     // Adjust X destination by right joystick
     dest.deltaX( (l_scale_*joy->axes[3]) * mult );
+    */
 
     // Solve for angles
     //bool found = solver.updateTargetPose(dest);
