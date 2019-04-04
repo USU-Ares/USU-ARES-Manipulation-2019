@@ -19,7 +19,7 @@ class Link {
 
         // Accessors
         double getLength();
-        int getCurrentAngle() const;
+        int getAngle() const;
         int getAxisOfRotation();
 
         // Return duty cycle from given angle
@@ -80,7 +80,7 @@ Link::~Link() {
 double Link::getLength() {
     return length;
 }
-int Link::getCurrentAngle() const {
+int Link::getAngle() const {
     return current_theta;
 }
 int Link::getAxisOfRotation() {

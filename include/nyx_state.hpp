@@ -70,10 +70,10 @@ std::vector<State> State::getNext(int stepSize) {
     // Create all next states that can result from current configuration
     std::vector<State> out = std::vector<State>();
 
-    for (int i=0; i<chain.size(); i++) {
+    for (unsigned int i=0; i<chain.size(); i++) {
         // Get link from chain, and increase and decrease angle by 1 degree
         Link decrement = chain[i];
-        decrement.setCurrentAngle(decrement.getCurrentAngle() - stepSize);
+        decrement.setCurrentAngle(decrement.getAngle() - stepSize);
         // Create states that will be put into vector
         State first  = State(*this);
         // Check if valid link
@@ -86,7 +86,7 @@ std::vector<State> State::getNext(int stepSize) {
 
 
         Link increment = chain[i];
-        increment.setCurrentAngle(increment.getCurrentAngle() + stepSize);
+        increment.setCurrentAngle(increment.getAngle() + stepSize);
         State second = State(*this);
         if (increment.isValid()) {
             second.chain[i] = increment;
@@ -101,7 +101,7 @@ void State::print() const {
     std::cout << "State information\n";
     currentPose.print();
     currentPose.print();
-    for (int i=0; i<chain.size(); i++) {
+    for (unsigned int i=0; i<chain.size(); i++) {
         //output += "  " + chain[i].print() + "\n";
         chain[i].print();
     }
@@ -130,9 +130,9 @@ bool State::operator==(const State &rhs) {
 // Hash of this state
 std::string State::hash() const {
     std::string out = "";
-    for (int i=0; i<chain.size(); i++) {
+    for (unsigned int i=0; i<chain.size(); i++) {
         Link temp = chain[i];
-        out += temp.getCurrentAngle();
+        out += temp.getAngle();
     }
     return out;
 }
@@ -147,15 +147,15 @@ Pose State::forwardKinematics() const {
     double pitch = 0.0;
 
     // Loop through links and adjust pose and orientation
-    for (int i=0; i<chain.size(); i++) {
+    for (unsigned int i=0; i<chain.size(); i++) {
         Link temp = chain[i];
         // If yaw joint, apply yaw
         if (temp.getAxisOfRotation() == 1) {
-            yaw += temp.getCurrentAngle();
+            yaw += temp.getAngle();
         }
         // If pitch joint, apply pitch
         if (temp.getAxisOfRotation() == 2) {
-            pitch += temp.getCurrentAngle();
+            pitch += temp.getAngle();
         }
 
         // Adjust pose appropriately
@@ -170,8 +170,8 @@ Pose State::forwardKinematics() const {
 
 // Check that state is within bounds to given state
 bool State::withinTolerance(const State &rhs, int tolerance) const {
-    for (int i=0; i<chain.size(); i++) {
-        if ( abs(chain[i].getCurrentAngle() - rhs.chain[i].getCurrentAngle()) > tolerance ) {
+    for (unsigned int i=0; i<chain.size(); i++) {
+        if ( abs(chain[i].getAngle() - rhs.chain[i].getAngle()) > tolerance ) {
             return false;
         }
     }
