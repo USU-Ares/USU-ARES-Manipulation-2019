@@ -151,7 +151,7 @@ State Solver::plan() {
             // Set state
             chain = current.getChain();
             currentState = current;
-            std::cout << "\t\t\t" << chain[0].getDuty(chain[0].getCurrentAngle()) << "\n";
+            std::cout << "\t\t\t" << chain[0].getDuty(chain[0].getAngle()) << "\n";
             applyMove();
 
             //return true;
@@ -166,7 +166,7 @@ State Solver::plan() {
         //std::cout << "\n";
         // Push next states onto heap
         std::vector<State> nextStates = current.getNext();
-        for (int i=0; i<nextStates.size(); i++) {
+        for (unsigned int i=0; i<nextStates.size(); i++) {
             std::string index = nextStates[i].hash();
             if (initial.withinTolerance(nextStates[i], stepSize) && mapper.count(index) == 0) {
                 stateHeap.push(nextStates[i]);
@@ -201,7 +201,7 @@ State Solver::trim(State initial, int stepSize) {
         // Find the state that is the closest to the target pose
         double distance = best.forwardKinematics() - targetPose;
 
-        for (int i=0; i<nextStates.size(); i++) {
+        for (unsigned int i=0; i<nextStates.size(); i++) {
             Pose current_end = nextStates[i].forwardKinematics();
 
             // Check that our current state is closer from target than initial state

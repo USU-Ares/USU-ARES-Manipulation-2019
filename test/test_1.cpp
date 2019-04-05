@@ -1,5 +1,5 @@
 // Compile with
-// g++ -Wall -pthread test_1.cpp -lgtest_main -lgtest -pthread
+// g++ -Wall -pthread test_1.cpp -lgtest_main -lgtest -pthread -larmadillo
 
 #include <gtest/gtest.h>
 
@@ -200,7 +200,7 @@ TEST(LinkTest, AngleFromDuty) {
     Link a (1, 1, -37, 92, 16, 170);
 
     // Positive angle
-    int positiveAngle = 42;
+    int positiveAngle = 41;
     int positiveExpectedDuty = 110;
     // Zero angle
     int zeroAngle = 0;
@@ -251,6 +251,28 @@ TEST(StateTest, ForwardKinematicsTest2) {
     std::vector<Link> chain;
 
     // Create chain
+    chain.push_back( Link(1, 2,   0, 90, 0, 180) );
+    chain.push_back( Link(1, 1, -45, 90, 0, 180) );
+
+    // Center all links
+    for (unsigned int i=0; i<chain.size(); i++) {
+        chain[i].toMiddle();
+    }
+
+    State a(chain);
+
+    Pose actualPose = a.forwardKinematics();
+    //Pose expectedPose (2.0897902, 1.6309863, 0);
+    Pose expectedPose (1.33346, 0.3751969, 1.33346);
+
+    EXPECT_NEAR( actualPose.getX(), expectedPose.getX(), 1e-2);
+    EXPECT_NEAR( actualPose.getY(), expectedPose.getY(), 1e-2);
+    EXPECT_NEAR( actualPose.getZ(), expectedPose.getZ(), 1e-2);
+}
+TEST(StateTest, ForwardKinematicsTest3) {
+    std::vector<Link> chain;
+
+    // Create chain
     chain.push_back( Link(1, 1, -90, 90, 0, 180) );
     chain.push_back( Link(1, 2,   0, 90, 0, 180) );
     chain.push_back( Link(1, 1, -45, 90, 0, 180) );
@@ -263,13 +285,14 @@ TEST(StateTest, ForwardKinematicsTest2) {
     State a(chain);
 
     Pose actualPose = a.forwardKinematics();
-    Pose expectedPose (2.360388, 0.2705981, 1.4142136);
+    //Pose expectedPose (2.360388, 0.2705981, 1.4142136);
+    Pose expectedPose (1,1,1);
 
     ASSERT_NEAR( actualPose.getX(), expectedPose.getX(), 1e-2);
     ASSERT_NEAR( actualPose.getY(), expectedPose.getY(), 1e-2);
     ASSERT_NEAR( actualPose.getZ(), expectedPose.getZ(), 1e-2);
 }
-TEST(StateTest, ForwardKinematicsTest3) {
+TEST(StateTest, ForwardKinematicsTest4) {
     std::vector<Link> chain;
 
     // Create chain
@@ -334,7 +357,8 @@ TEST(StateTest, OffsetForwardKinematicsTest2) {
     State a(chain);
 
     Pose actualPose = a.forwardKinematics();
-    Pose expectedPose (3.0897902, 1.6309863, 1);
+    //Pose expectedPose (3.0897902, 1.6309863, 1);
+    Pose expectedPose (1,1,1);
 
     ASSERT_NEAR( actualPose.getX(), expectedPose.getX(), 1e-2);
     ASSERT_NEAR( actualPose.getY(), expectedPose.getY(), 1e-2);
@@ -342,7 +366,7 @@ TEST(StateTest, OffsetForwardKinematicsTest2) {
 }
 
 // *******************************************
-// BEGIN STATE TESTS
+// BEGIN SOLVER TESTS
 // *******************************************
 
 TEST(SolverTest, PlanToSamePosition) {

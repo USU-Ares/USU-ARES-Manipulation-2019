@@ -2,6 +2,7 @@
 #define NYX_LINK_HPP
 
 #include <stdio.h>
+#include <vector>
 
 // Helper function to convert degrees to radians
 double radians(const double degrees) {
@@ -38,6 +39,10 @@ class Link {
         void toMiddle();
 
         void print() const;
+
+        double getX() const;
+        double getY() const;
+        double getZ() const;
     private:
         // Link information
         int axis;      // Direction of rotation. 1 = yaw, 2 = pitch
@@ -142,5 +147,33 @@ bool Link::isValid() {
 
 void Link::print() const {
     printf("Theta: %d  Min/Max: %d/%d\n",current_theta, min_theta, max_theta);
+}
+
+double Link::getX() const {
+    if (axis == 1) {
+        // In XY plane
+        return length * cos(current_theta);
+    } else {
+        // In XZ/YZ plane
+        return length * sin(current_theta); // Will be 0
+    }
+}
+double Link::getY() const {
+    if (axis == 1) {
+        // In XY plane
+        return length * sin(current_theta);
+    } else {
+        // In XZ/YZ plane
+        return length * cos(current_theta);
+    }
+}
+double Link::getZ() const {
+    if (axis == 1) {
+        // In XY plane
+        return 0;
+    } else {
+        // In XZ/YZ plane
+        return length * sin(current_theta);
+    }
 }
 #endif

@@ -4,6 +4,9 @@
 #include <math.h>
 #include <stdio.h>
 
+void cartesianToSpherical(double &x, double &y, double &z, double &rho, double &theta, double &phi);
+void sphericalToCartesian(double &x, double &y, double &z, double &rho, double &theta, double &phi);
+
 // Class to handle pose information for planning
 class Pose {
     public:
@@ -70,13 +73,9 @@ void Pose::deltaCartesian(double d_x, double d_y, double d_z) {
     deltaZ(d_z);
 }
 void Pose::deltaSpherical(double d_rho, double d_theta, double d_phi) {
-    double distance = pow( x, 2) + pow( y, 2) + pow( z, 2);
-    distance = sqrt(distance);
-
     // Get spherical coordinates from cartesian points
-    double phi = atan( z / sqrt(x*x + y*y) );
-    double theta = atan( y / x );
-    double rho = distance;
+    double rho, theta, phi;
+    cartesianToSpherical(x,y,z, rho, theta, phi);
 
     // Adjust values by deltas
     phi += d_phi;
@@ -84,6 +83,15 @@ void Pose::deltaSpherical(double d_rho, double d_theta, double d_phi) {
     rho += d_rho;
 
     // Convert back to cartesian
+    sphericalToCartesian(x,y,z, rho, theta, phi);
+}
+
+void cartesianToSpherical(double &x, double &y, double &z, double &rho, double &theta, double &phi) {
+    phi = atan( z / sqrt(x*x + y*y) );
+    theta = atan( y / x );
+    rho = sqrt( x*x + y*y + z*z);
+}
+void sphericalToCartesian(double &x, double &y, double &z, double &rho, double &theta, double &phi) {
     x = rho * cos(phi) * cos(theta);
     y = rho * cos(phi) * sin(theta);
     z = rho * sin(phi);

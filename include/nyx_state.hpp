@@ -2,6 +2,7 @@
 #define NYX_STATE_HPP
 
 #include <vector>
+#include <armadillo>
 
 #include "nyx_link.hpp"
 #include "nyx_pose.hpp"
@@ -139,6 +140,86 @@ std::string State::hash() const {
 
 // Get position of end manipulator with @chain
 Pose State::forwardKinematics() const {
+    // Initialize lastValue to be the final vector V
+    double x, y, z;
+    double rho, theta, phi;
+    double c_phi, c_theta,
+           s_phi, s_theta;
+
+    Link current = chain[chain.size()-1];
+    // Get X/Y/Z of link
+    x = current.getX();
+    y = current.getY();
+    z = current.getZ();
+    // Get angles
+    cartesianToSpherical(x,y,z, rho,theta,phi);
+    c_phi = cos(phi);
+    s_phi = sin(phi);
+    c_theta = cos(theta);
+    s_theta = sin(theta);
+
+    /*
+    arma::dmat lastValue { rho * c_phi * c_theta ,
+                           rho * c_phi * s_theta ,
+                           rho * s_phi           };
+                           */
+    //std::cout << "Creating first lastValue\n";
+    arma::dmat lastValue (3,1);
+    lastValue[0] = rho * c_phi * c_theta;
+    lastValue[1] = rho * c_phi * s_theta;
+    lastValue[2] = rho * s_phi;
+    //std::cout << "Finish first lastValue\n";
+
+    // Loop through the links backwards, and apply the coordinate transforms
+    for (int i=chain.size()-2; i>=0; i--) {
+        // Y
+        // [ cos(phi), 0, sin(phi),
+        //   0       , 1, 0       ,
+        //  -sin(phi), 0, cos(phi) ]
+        //
+        //  Z
+        //  [ cos(theta), -sin(theta), 0,
+        //    sin(theta),  cos(theta), 0,
+        //    0         , 0          , 1 ]
+
+        //std::cout << "A + " <<i<< "\n";
+        x = chain[i].getX();
+        y = chain[i].getY();
+        z = chain[i].getZ();
+        //std::cout << "B\n";
+        // Get angles
+        cartesianToSpherical(x,y,z, rho,theta,phi);
+        c_phi = cos(phi);
+        s_phi = sin(phi);
+        c_theta = cos(theta);
+        s_theta = sin(theta);
+        //std::cout << "C\n";
+
+        // Coordinate transform matrix
+        arma::dmat y { { c_phi, 0 , s_phi},
+                       {  0 , 1 ,  0 },
+                       {-s_phi, 0 ,  c_phi} };
+        //std::cout << "D\n";
+        arma::dmat z { { c_theta, -s_theta, 0 },
+                       { s_theta,  c_theta, 0 },
+                       {  0 ,   0 , 1 } };
+
+        //std::cout << "E\n";
+        arma::dmat v (3,1);
+        v[0] = rho * c_phi * c_theta;
+        v[1] = rho * c_phi * s_theta;
+        v[2] = rho * s_phi;;
+        //std::cout << "F\n";
+
+        lastValue = v + y * z * lastValue;
+        //std::cout << "G\n";
+    }
+
+    //std::cout << "H\n";
+    Pose end = Pose(lastValue[0], lastValue[1], lastValue[2]);
+    //std::cout << "I\n";
+    return end;
+    /*
     // Initial pose
     Pose end = Pose(0,0,0);
 
@@ -166,6 +247,7 @@ Pose State::forwardKinematics() const {
     }
 
     return end;
+    */
 }
 
 // Check that state is within bounds to given state
