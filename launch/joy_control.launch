@@ -1,6 +1,7 @@
 <launch>
   <!-- joy node -->
-    <node respawn="true" pkg="joy" type="joy_node" name="joystick_node" >
+    <node respawn="true" pkg="nyx_joy" type="nyx_joy_node" name="nyx_node" >
+    <!-- <node respawn="true" pkg="joy" type="joy_node" name="joystick_node" > -->
       <param name="dev" type="string" value="/dev/input/js0" />
       <param name="autorepeat_rate" value="80" />
       <!-- <param name="coalesce_rate" value="2" /> -->
@@ -13,7 +14,7 @@
     <param name="axis_angular" value="0" type="int"/>
     <param name="scale_linear" value="2" type="double"/>
     <param name="scale_angular" value="2" type="double"/>
-    <node pkg="usu-ares-manipulation-2019" type="usu-ares-manipulation-2019_node" name="arm_control_node" output="screen"/>
+    <node pkg="joy_test" type="joy_test_node" name="arm_control_node" output="screen"/>
 
   <!-- ROS Serial -->
     <node pkg="rosserial_python" type="serial_node.py" name="serial_node">
